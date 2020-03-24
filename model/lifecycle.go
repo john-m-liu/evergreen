@@ -260,9 +260,9 @@ func MarkVersionCompleted(versionId string, finishTime time.Time, updates *Statu
 		"version":       versionId,
 		"num_builds":    len(builds),
 	})
+	updates.VersionNewStatus = versionStatusFromTasks
 	if activeBuilds > 0 && buildsWithAllActiveTasksComplete >= activeBuilds {
 		updates.VersionComplete = true
-		updates.VersionNewStatus = versionStatusFromTasks
 		event.LogVersionStateChangeEvent(versionId, status)
 	}
 	if !finished {

@@ -514,12 +514,14 @@ func getTaskDrawerItems(displayName string, variant string, reverseOrder bool, v
 		versionIds = append(versionIds, v.Id)
 	}
 
-	revisionSort := task.RevisionOrderNumberKey
+	revisionSort := bson.M{
+		task.RevisionOrderNumberKey: 1,
+	}
 	if reverseOrder {
-		revisionSort = "-" + revisionSort
+		revisionSort[task.RevisionOrderNumberKey] = -1
 	}
 
-	tasks, err := task.FindWithDisplayTasks(task.ByVersionsForNameAndVariant(versionIds, []string{displayName}, variant).Sort([]string{revisionSort}))
+	tasks, err := task.FindWithDisplayTasks(task.ByVersionsForNameAndVariantFilter(versionIds, []string{displayName}, variant), revisionSort)
 
 	if err != nil {
 		return nil, errors.Wrap(err, "error getting sibling tasks")

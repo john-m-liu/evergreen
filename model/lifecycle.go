@@ -381,7 +381,7 @@ func RestartVersion(versionId string, taskIds []string, abortInProgress bool, ca
 		})
 	}
 	startPhaseAt := time.Now()
-	finishedTasks, err := task.FindWithDisplayTasks(task.ByIdsAndStatus(taskIds, evergreen.CompletedStatuses))
+	finishedTasks, err := task.FindWithDisplayTasks(task.ByIdsAndStatusFilter(taskIds, evergreen.CompletedStatuses), nil)
 	grip.Info(message.Fields{
 		"message":       "Find completed tasks",
 		"version":       versionId,
@@ -525,7 +525,7 @@ func RestartBuild(buildId string, taskIds []string, abortInProgress bool, caller
 	}
 
 	// restart all the 'not in-progress' tasks for the build
-	tasks, err := task.FindWithDisplayTasks(task.ByIdsAndStatus(taskIds, evergreen.CompletedStatuses))
+	tasks, err := task.FindWithDisplayTasks(task.ByIdsAndStatusFilter(taskIds, evergreen.CompletedStatuses), nil)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -541,7 +541,7 @@ func RestartAllBuildTasks(buildId string, caller string) error {
 		return errors.WithStack(err)
 	}
 
-	allTasks, err := task.FindWithDisplayTasks(task.ByBuildId(buildId))
+	allTasks, err := task.FindWithDisplayTasks(task.ByBuildIdFilter(buildId), nil)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -606,7 +606,7 @@ func CreateTasksCache(tasks []task.Task) []build.TaskCache {
 // RefreshTasksCache updates a build document so that the tasks cache reflects the correct current
 // state of the tasks it represents.
 func RefreshTasksCache(buildId string) error {
-	tasks, err := task.FindWithDisplayTasks(task.ByBuildId(buildId))
+	tasks, err := task.FindWithDisplayTasks(task.ByBuildIdFilter(buildId), nil)
 	if err != nil {
 		return errors.WithStack(err)
 	}

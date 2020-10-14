@@ -303,7 +303,7 @@ func DeactivatePreviousTasks(t *task.Task, caller string) error {
 		t.BuildVariant,
 		t.DisplayName,
 		t.Project,
-	))
+	), bson.M{task.RevisionOrderNumberKey: -1})
 	if err != nil {
 		return errors.Wrapf(err, "error finding tasks to deactivate for task %s", t.Id)
 	}
@@ -311,7 +311,7 @@ func DeactivatePreviousTasks(t *task.Task, caller string) error {
 	if t.DisplayOnly {
 		for _, dt := range allTasks {
 			var execTasks []task.Task
-			execTasks, err = task.FindWithDisplayTasks(task.ByIds(dt.ExecutionTasks))
+			execTasks, err = task.FindWithDisplayTasks(task.ByIdsFilter(dt.ExecutionTasks), nil)
 			if err != nil {
 				return errors.Wrapf(err, "error finding execution tasks to deactivate for task %s", t.Id)
 			}
@@ -957,7 +957,7 @@ func MarkOneTaskReset(t *task.Task, logIDs bool) error {
 }
 
 func MarkTasksReset(taskIds []string) error {
-	tasks, err := task.FindWithDisplayTasks(task.ByIds(taskIds))
+	tasks, err := task.FindWithDisplayTasks(task.ByIdsFilter(taskIds), nil)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -1017,7 +1017,7 @@ func RestartFailedTasks(opts RestartOptions) (RestartResults, error) {
 	if opts.IncludeSetupFailed {
 		failureTypes = append(failureTypes, evergreen.CommandTypeSetup)
 	}
-	tasksToRestart, err := task.FindWithDisplayTasks(task.ByTimeStartedAndFailed(opts.StartTime, opts.EndTime, failureTypes))
+	tasksToRestart, err := task.FindWithDisplayTasks(task.ByTimeStartedAndFailed(opts.StartTime, opts.EndTime, failureTypes), nil)
 	if err != nil {
 		return results, err
 	}

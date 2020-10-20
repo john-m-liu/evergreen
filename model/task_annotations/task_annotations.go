@@ -1,4 +1,4 @@
-package task_annotations
+package taskannotations
 
 import (
 	"time"

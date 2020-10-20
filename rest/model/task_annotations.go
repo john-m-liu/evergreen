@@ -4,50 +4,49 @@ import (
 	"time"
 )
 
-type ApiTaskAnnotations struct {
-	Id string `bson:"_id" json:"id"`
-	// Comment about the failure
-	Note string `bson:"note,omitempty" json:"note,omitempty"`
+type ApiTaskAnnotation struct {
+	Note *string `bson:"note,omitempty" json:"note,omitempty"`
 	// Links to tickets definitely related.
-	Issues []*IssueLink `bson:"issues,omitempty" json:"issue,omitempty"`
+	Issues []APIIssueLink `bson:"issues,omitempty" json:"issue,omitempty"`
 	// Links to tickets possibly related
-	SuspectIssues []*IssueLink `bson:"suspected_issues,omitempty" json:"suspected_issues,omitempty"`
+	SuspectIssues []APIIssueLink `bson:"suspected_issues,omitempty" json:"suspected_issues,omitempty"`
 	// annotation attribution
-	Source AnnotationSource `bson:"source,omitempty" json:"source,omitempty"`
-	// structured data about the task (not displayed in the UI, but available in the API)
-	Metadata map[string]interface{} `bson:"metadata,omitempty" json:"metadata,omitempty"`
+	Source APIAnnotationSource `bson:"source,omitempty" json:"source,omitempty"`
 }
 
-type IssueLink struct {
-	URL string `bson:"url" json:"url"`
+type APIIssueLink struct {
+	URL *string `bson:"url" json:"url"`
 	// Text to be displayed
-	IssueKey string `bson:"issue_key,omitempty" json:"issue_key,omitempty"`
+	IssueKey *string `bson:"issue_key,omitempty" json:"issue_key,omitempty"`
 }
 
-type AnnotationSource struct {
+type APIAnnotationSource struct {
 	Author string `bson:"author,omitempty" json:"author,omitempty"`
 	// Text to be displayed
 	Time time.Time `bson:"time,omitempty" json:"time,omitempty"`
 }
 
-// func (f *APIFile) BuildFromService(h interface{}) error {
+// func (t *ApiTaskAnnotation) BuildFromService(h interface{}) error {
 // 	switch v := h.(type) {
-// 	case artifact.File:
-// 		f.Name = ToStringPtr(v.Name)
-// 		f.Link = ToStringPtr(v.Link)
-// 		f.Visibility = ToStringPtr(v.Visibility)
-// 		f.IgnoreForFetch = v.IgnoreForFetch
+// 	case task_annotations.TaskAnnotation:
+// 		t.Note = ToStringPtr(v.Note)
+// 		issues := []APIIssueLink{}
+// 		if err := issues.BuildFromService(v.issues); err != nil {
+// 			return errors.Wrap(err, "Error converting from task_annotations.APIIssueLink to model.APIIssueLink")
+// 		}
+// 		t.SuspectIssues = v.SuspectIssues
+// 		t.Source = v.Source
 // 	default:
 // 		return errors.Errorf("%T is not a supported type", h)
 // 	}
 // 	return nil
 // }
 
-// func (f *APIFile) ToService() (interface{}, error) {
-// 	return artifact.File{
-// 		Name:           FromStringPtr(f.Name),
-// 		Link:           FromStringPtr(f.Link),
-// 		Visibility:     FromStringPtr(f.Visibility),
-// 		IgnoreForFetch: f.IgnoreForFetch,
+// func (t *ApiTaskAnnotation) ToService() (interface{}, error) {
+// 	return task_annotations.TaskAnnotation{
+// 		Note:          FromStringPtr(t.Note),
+// 		Issues:        FromStringPtr(t.Issues),
+// 		SuspectIssues: FromStringPtr(t.SuspectIssues),
+// 		Source:        t.Source,
 // 	}, nil
 // }

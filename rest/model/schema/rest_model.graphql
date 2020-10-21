@@ -29,7 +29,7 @@ type ApiTaskAnnotation {
   SuspectIssues: [APIIssueLink]
     @aliases(db: SuspectIssues, json: suspected_issues)
   Source: APIAnnotationSource @aliases(db: Source, json: source)
-  Metadata: json.RawMessage @aliases(db: Metadata, json: metadata)
+  Metadata: String @aliases(db: Metadata, json: metadata)
 }
 
 scalar Time

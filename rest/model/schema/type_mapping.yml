@@ -3,9 +3,9 @@ models:
     model: github.com/evergreen-ci/evergreen/model/user.DBUser
   DisplayTask:
     model: github.com/evergreen-ci/evergreen/model/patch.DisplayTask
-  ApiTaskAnnotation:
+  TaskAnnotation:
     model: github.com/evergreen-ci/evergreen/model/task_annotations.TaskAnnotation
-  APIIssueLink:
+  IssueLink:
     model: github.com/evergreen-ci/evergreen/model/task_annotations.IssueLink
-  APIAnnotationSource:
+  AnnotationSource:
     model: github.com/evergreen-ci/evergreen/model/task_annotations.AnnotationSource

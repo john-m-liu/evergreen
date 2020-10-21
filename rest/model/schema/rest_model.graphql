@@ -23,11 +23,14 @@ type APIAnnotationSource {
 }
 
 type ApiTaskAnnotation {
+  Id: String @aliases(db: Id, json: id)
   Note: String @aliases(db: Note, json: note)
   Issues: [APIIssueLink] @aliases(db: Issues, json: issues)
   SuspectIssues: [APIIssueLink]
     @aliases(db: SuspectIssues, json: suspected_issues)
   Source: APIAnnotationSource @aliases(db: Source, json: source)
+  Metadata: json.RawMessage @aliases(db: Metadata, json: metadata)
 }
 
 scalar Time
+scalar Any

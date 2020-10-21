@@ -1,6 +1,7 @@
 package task_annotations
 
 import (
+	"encoding/json"
 	"time"
 )
 
@@ -15,7 +16,7 @@ type TaskAnnotation struct {
 	// annotation attribution
 	Source AnnotationSource `bson:"source,omitempty" json:"source,omitempty"`
 	// structured data about the task (not displayed in the UI, but available in the API)
-	Metadata map[string]interface{} `bson:"metadata,omitempty" json:"metadata,omitempty"`
+	Metadata json.RawMessage `bson:"metadata,omitempty" json:"metadata,omitempty"`
 }
 
 type IssueLink struct {

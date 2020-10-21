@@ -3,10 +3,21 @@
 package model
 
 import (
+	"time"
+
 	"github.com/evergreen-ci/evergreen/model/patch"
+	"github.com/evergreen-ci/evergreen/model/task_annotations"
 	"github.com/evergreen-ci/evergreen/model/user"
 )
 
+type APIAnnotationSource struct {
+	Author *string    `json:"author"`
+	Time   *time.Time `json:"time"`
+}
+type APIIssueLink struct {
+	URL      *string `json:"url"`
+	IssueKey *string `json:"issue_key"`
+}
 type APIDisplayTask struct {
 	Name           *string  `json:"name"`
 	ExecutionTasks []string `json:"execution_tasks"`
@@ -16,6 +27,42 @@ type APIDBUser struct {
 	DisplayName *string  `json:"display_name"`
 	OnlyApi     bool     `json:"only_api"`
 	Roles       []string `json:"roles"`
+}
+
+// APIAnnotationSourceBuildFromService takes the task_annotations.AnnotationSource DB struct and
+// returns the REST struct *APIAnnotationSource with the corresponding fields populated
+func APIAnnotationSourceBuildFromService(t task_annotations.AnnotationSource) *APIAnnotationSource {
+	m := APIAnnotationSource{}
+	m.Author = StringStringPtr(t.Author)
+	m.Time = TimeTimeTimeTimePtr(t.Time)
+	return &m
+}
+
+// APIAnnotationSourceToService takes the APIAnnotationSource REST struct and returns the DB struct
+// *task_annotations.AnnotationSource with the corresponding fields populated
+func APIAnnotationSourceToService(m APIAnnotationSource) *task_annotations.AnnotationSource {
+	out := &task_annotations.AnnotationSource{}
+	out.Author = StringPtrString(m.Author)
+	out.Time = TimeTimePtrTimeTime(m.Time)
+	return out
+}
+
+// APIIssueLinkBuildFromService takes the task_annotations.IssueLink DB struct and
+// returns the REST struct *APIIssueLink with the corresponding fields populated
+func APIIssueLinkBuildFromService(t task_annotations.IssueLink) *APIIssueLink {
+	m := APIIssueLink{}
+	m.URL = StringStringPtr(t.URL)
+	m.IssueKey = StringStringPtr(t.IssueKey)
+	return &m
+}
+
+// APIIssueLinkToService takes the APIIssueLink REST struct and returns the DB struct
+// *task_annotations.IssueLink with the corresponding fields populated
+func APIIssueLinkToService(m APIIssueLink) *task_annotations.IssueLink {
+	out := &task_annotations.IssueLink{}
+	out.URL = StringPtrString(m.URL)
+	out.IssueKey = StringPtrString(m.IssueKey)
+	return out
 }
 
 // APIDisplayTaskBuildFromService takes the patch.DisplayTask DB struct and

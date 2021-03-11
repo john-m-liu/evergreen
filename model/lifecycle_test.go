@@ -437,7 +437,7 @@ func TestSetVersionActivation(t *testing.T) {
 		require.NoError(t, task.Insert())
 	}
 
-	assert.NoError(t, SetVersionActivation(vID, false, "user"))
+	assert.NoError(t, SetVersionActivation(vID, false, false, "user"))
 	builds, err := build.FindBuildsByVersions([]string{vID})
 	require.NoError(t, err)
 	require.Len(t, builds, 2)
@@ -452,6 +452,29 @@ func TestSetVersionActivation(t *testing.T) {
 	t1, err := task.FindOneId(tasks[1].Id)
 	require.NoError(t, err)
 	assert.True(t, t1.Activated)
+
+	// verify that the commit queue merge does not get unscheduled
+	vID = "v2"
+	builds = []build.Build{
+		{Id: "b2", Version: vID, Activated: true},
+		{Id: "b3", Version: vID, BuildVariant: evergreen.MergeTaskVariant, Activated: true, Tasks: []build.TaskCache{{Id: "t3", DisplayName: evergreen.MergeTaskName}}},
+	}
+	for _, build := range builds {
+		require.NoError(t, build.Insert())
+	}
+
+	tasks = []task.Task{
+		{Id: "t2", BuildId: "b2", Activated: true, Status: evergreen.TaskUndispatched},
+		{Id: "t3", BuildId: "b3", Activated: true, DisplayName: evergreen.MergeTaskName, Status: evergreen.TaskUndispatched},
+	}
+	for _, task := range tasks {
+		require.NoError(t, task.Insert())
+	}
+
+	assert.NoError(t, SetVersionActivation(vID, false, true, "user"))
+	t3, err := task.FindOneId("t3")
+	assert.NoError(t, err)
+	assert.Equal(t, true, t3.Activated)
 }
 
 func TestBuildSetActivated(t *testing.T) {

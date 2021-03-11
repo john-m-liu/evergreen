@@ -1688,6 +1688,16 @@ func TestDequeueAndRestart(t *testing.T) {
 		CommitQueueMerge: true,
 	}
 	assert.NoError(t, t3.Insert())
+	t4 := task.Task{
+		Id:               "4",
+		Version:          v3.Hex(),
+		BuildId:          "3-2",
+		Project:          "p",
+		Status:           evergreen.TaskSucceeded,
+		Requester:        evergreen.MergeTestRequester,
+		CommitQueueMerge: true,
+	}
+	assert.NoError(t, t4.Insert())
 	b1 := build.Build{
 		Id:      "1",
 		Version: v1.Hex(),
@@ -1712,6 +1722,14 @@ func TestDequeueAndRestart(t *testing.T) {
 		},
 	}
 	assert.NoError(t, b3.Insert())
+	b32 := build.Build{
+		Id:      "3-2",
+		Version: v3.Hex(),
+		Tasks: []build.TaskCache{
+			{Id: t4.Id},
+		},
+	}
+	assert.NoError(t, b32.Insert())
 	p1 := patch.Patch{
 		Id:      v1,
 		Alias:   evergreen.CommitQueueAlias,

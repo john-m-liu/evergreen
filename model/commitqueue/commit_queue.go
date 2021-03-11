@@ -4,9 +4,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/evergreen-ci/evergreen/model/build"
-	"github.com/evergreen-ci/evergreen/model/event"
-	"github.com/evergreen-ci/evergreen/model/task"
 	"github.com/mongodb/grip"
 	"github.com/mongodb/grip/message"
 	"github.com/pkg/errors"
@@ -219,41 +216,5 @@ func RemoveCommitQueueItemForVersion(projectId, version string, user string) (*C
 		return nil, nil
 	}
 
-	return cq.RemoveItemAndPreventMerge(issue, true, user)
-}
-
-func (cq *CommitQueue) RemoveItemAndPreventMerge(issue string, versionExists bool, user string) (*CommitQueueItem, error) {
-	removed, err := cq.Remove(issue)
-	if err != nil {
-		return removed, errors.Wrapf(err, "can't remove item '%s' from queue '%s'", issue, cq.ProjectID)
-	}
-
-	if removed == nil {
-		return nil, nil
-	}
-	if versionExists {
-		err = preventMergeForItem(*removed, user)
-	}
-
-	return removed, errors.Wrapf(err, "can't prevent merge for item '%s' on queue '%s'", issue, cq.ProjectID)
-}
-
-func preventMergeForItem(item CommitQueueItem, user string) error {
-	// Disable the merge task
-	mergeTask, err := task.FindMergeTaskForVersion(item.Version)
-	if err != nil {
-		return errors.Wrapf(err, "can't find merge task for '%s'", item.Issue)
-	}
-	if mergeTask == nil {
-		return errors.New("merge task doesn't exist")
-	}
-	event.LogMergeTaskUnscheduled(mergeTask.Id, mergeTask.Execution, user)
-	if _, err = mergeTask.SetDisabledPriority(user); err != nil {
-		return errors.Wrap(err, "can't disable merge task")
-	}
-	if err = build.SetCachedTaskActivated(mergeTask.BuildId, mergeTask.Id, false); err != nil {
-		return errors.Wrapf(err, "error updating task cache for build %s", mergeTask.BuildId)
-	}
-
-	return nil
+	return cq.Remove(issue)
 }

@@ -581,7 +581,7 @@ func ModifyVersion(version model.Version, user user.DBUser, proj *model.ProjectR
 		if version.Requester == evergreen.MergeTestRequester && modifications.Active {
 			return http.StatusBadRequest, errors.New("commit queue merges cannot be manually scheduled")
 		}
-		if err := model.SetVersionActivation(version.Id, modifications.Active, user.Id); err != nil {
+		if err := model.SetVersionActivation(version.Id, modifications.Active, false, user.Id); err != nil {
 			return http.StatusInternalServerError, errors.Errorf("error activating patch: %s", err)
 		}
 		// abort after deactivating the version so we aren't bombarded with failing tasks while

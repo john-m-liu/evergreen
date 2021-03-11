@@ -49,8 +49,8 @@ type gitFetchProject struct {
 
 	Token string `plugin:"expand" mapstructure:"token"`
 
-	ShallowClone bool `mapstructure:"shallow_clone"`
-
+	ShallowClone      bool `mapstructure:"shallow_clone"`
+	ContinueOnError   bool `mapstructure:"continue_on_err"`
 	RecurseSubmodules bool `mapstructure:"recurse_submodules"`
 
 	CommitterName  string `mapstructure:"committer_name"`
@@ -372,6 +372,9 @@ func (c *gitFetchProject) Execute(ctx context.Context, comm client.Communicator,
 			"repo":         conf.ProjectRef.Repo,
 			"branch":       conf.ProjectRef.Branch,
 		}))
+	}
+	if c.ContinueOnError {
+		return nil
 	}
 	return err
 }

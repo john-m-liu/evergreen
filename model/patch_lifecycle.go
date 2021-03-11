@@ -505,9 +505,9 @@ func SubscribeOnParentOutcome(parentStatus string, childPatchId string, parentPa
 	return nil
 }
 
-func CancelPatch(p *patch.Patch, reason task.AbortInfo) error {
+func CancelPatch(p *patch.Patch, reason task.AbortInfo, skipCommitQueueMerge bool) error {
 	if p.Version != "" {
-		if err := SetVersionActivation(p.Version, false, reason.User); err != nil {
+		if err := SetVersionActivation(p.Version, false, false, reason.User); err != nil {
 			return errors.WithStack(err)
 		}
 		return errors.WithStack(task.AbortVersion(p.Version, reason))
@@ -537,7 +537,7 @@ func AbortPatchesWithGithubPatchData(createdBefore time.Time, closed bool, newPa
 	catcher := grip.NewSimpleCatcher()
 	for i, _ := range patches {
 		if patches[i].Version != "" {
-			if err = CancelPatch(&patches[i], task.AbortInfo{User: evergreen.GithubPatchUser, NewVersion: newPatch, PRClosed: closed}); err != nil {
+			if err = CancelPatch(&patches[i], task.AbortInfo{User: evergreen.GithubPatchUser, NewVersion: newPatch, PRClosed: closed}, false); err != nil {
 				grip.Error(message.WrapError(err, message.Fields{
 					"source":         "github hook",
 					"created_before": createdBefore.String(),

@@ -416,7 +416,7 @@ func (as *APIServer) existingPatchRequest(w http.ResponseWriter, r *http.Request
 
 		gimlet.WriteJSON(w, "patch finalized")
 	case "cancel":
-		err = model.CancelPatch(p, task.AbortInfo{User: dbUser.Id})
+		err = model.CancelPatch(p, task.AbortInfo{User: dbUser.Id}, false)
 		if err != nil {
 			as.LoggedError(w, r, http.StatusInternalServerError, err)
 			return

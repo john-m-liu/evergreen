@@ -101,7 +101,7 @@ func (j *periodicBuildJob) Run(ctx context.Context) {
 		j.AddError(err)
 		return
 	}
-	j.AddError(model.SetVersionActivation(versionID, true, evergreen.User))
+	j.AddError(model.SetVersionActivation(versionID, true, false, evergreen.User))
 }
 
 func (j *periodicBuildJob) addVersion(ctx context.Context, definition model.PeriodicBuildDefinition) (string, error) {

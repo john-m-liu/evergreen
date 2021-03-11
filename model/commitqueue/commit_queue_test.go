@@ -4,12 +4,8 @@ import (
 	"testing"
 
 	"github.com/evergreen-ci/evergreen/db"
-	"github.com/evergreen-ci/evergreen/model/build"
-	"github.com/evergreen-ci/evergreen/model/event"
-	"github.com/evergreen-ci/evergreen/model/task"
 	_ "github.com/evergreen-ci/evergreen/testutil"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -244,37 +240,6 @@ func (s *CommitQueueSuite) TestFindOneId() {
 	cq, err = FindOneId("not_here")
 	s.NoError(err)
 	s.Nil(cq)
-}
-
-func TestPreventMergeForItem(t *testing.T) {
-	assert.NoError(t, db.ClearCollections(event.SubscriptionsCollection, task.Collection, build.Collection))
-
-	patchID := "abcdef012345"
-
-	item := CommitQueueItem{
-		Issue:   patchID,
-		Source:  SourceDiff,
-		Version: patchID,
-	}
-
-	mergeBuild := &build.Build{Id: "b1", Tasks: []build.TaskCache{{Id: "t1", Activated: true}}}
-	require.NoError(t, mergeBuild.Insert())
-	mergeTask := &task.Task{Id: "t1", CommitQueueMerge: true, Version: patchID, BuildId: "b1"}
-	require.NoError(t, mergeTask.Insert())
-
-	// With a corresponding version
-	assert.NoError(t, preventMergeForItem(item, "user"))
-	subscriptions, err := event.FindSubscriptions(event.ResourceTypePatch, []event.Selector{{Type: event.SelectorID, Data: patchID}})
-	assert.NoError(t, err)
-	assert.Empty(t, subscriptions)
-
-	mergeTask, err = task.FindOneId("t1")
-	assert.NoError(t, err)
-	assert.Equal(t, int64(-1), mergeTask.Priority)
-
-	mergeBuild, err = build.FindOneId("b1")
-	assert.NoError(t, err)
-	assert.False(t, mergeBuild.Tasks[0].Activated)
 }
 
 func TestNextUnprocessed(t *testing.T) {

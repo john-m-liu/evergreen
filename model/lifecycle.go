@@ -64,16 +64,18 @@ func cacheFromTask(t task.Task) build.TaskCache {
 
 // SetVersionActivation updates the "active" state of all builds and tasks associated with a
 // version to the given setting. It also updates the task cache for all builds affected.
-func SetVersionActivation(versionId string, active bool, caller string) error {
+func SetVersionActivation(versionId string, active, skipCommitQueueMerge bool, caller string) error {
 	builds, err := build.Find(
-		build.ByVersion(versionId).WithFields(build.IdKey),
+		build.ByVersion(versionId),
 	)
 	if err != nil {
 		return errors.Wrapf(err, "can't get builds for version '%s'", versionId)
 	}
 	buildIDs := make([]string, 0, len(builds))
 	for _, build := range builds {
-		buildIDs = append(buildIDs, build.Id)
+		if build.Id != evergreen.MergeTaskVariant || !skipCommitQueueMerge {
+			buildIDs = append(buildIDs, build.Id)
+		}
 	}
 
 	// Update activation for all builds before updating their tasks so the version won't spend
@@ -82,7 +84,19 @@ func SetVersionActivation(versionId string, active bool, caller string) error {
 		return errors.Wrapf(err, "can't set activation for builds in '%s'", versionId)
 	}
 
-	return errors.Wrapf(setTaskActivationForBuilds(buildIDs, active, nil, caller),
+	var ignoreTasks []string
+	if skipCommitQueueMerge {
+		for _, build := range builds {
+			if build.BuildVariant == evergreen.MergeTaskVariant {
+				for _, t := range build.Tasks {
+					if t.DisplayName == evergreen.MergeTaskName {
+						ignoreTasks = []string{t.Id}
+					}
+				}
+			}
+		}
+	}
+	return errors.Wrapf(setTaskActivationForBuilds(buildIDs, active, ignoreTasks, caller),
 		"can't set activation for tasks in version '%s'", versionId)
 }
 
@@ -126,6 +140,9 @@ func setTaskActivationForBuilds(buildIds []string, active bool, ignoreTasks []st
 		query := bson.M{
 			task.BuildIdKey: bson.M{"$in": buildIds},
 			task.StatusKey:  evergreen.TaskUndispatched,
+		}
+		if len(ignoreTasks) > 0 {
+			query[task.IdKey] = bson.M{"$nin": ignoreTasks}
 		}
 		// if the caller is the default task activator only deactivate tasks that have not been activated by a user
 		if evergreen.IsSystemActivator(caller) {

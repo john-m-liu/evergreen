@@ -129,7 +129,7 @@ func (pc *DBPatchConnector) AbortPatch(patchId string, user string) error {
 			Message:    fmt.Sprintf("patch with id %s not found", patchId),
 		}
 	}
-	return model.CancelPatch(p, task.AbortInfo{User: user})
+	return model.CancelPatch(p, task.AbortInfo{User: user}, false)
 }
 
 // SetPatchPriority attempts to set the priority on the corresponding version.
@@ -179,7 +179,7 @@ func (pc *DBPatchConnector) SetPatchActivated(ctx context.Context, patchId strin
 		}
 	}
 
-	return model.SetVersionActivation(patchId, activated, user)
+	return model.SetVersionActivation(patchId, activated, false, user)
 }
 
 func (pc *DBPatchConnector) FindPatchesByProjectPatchNameStatusesCommitQueue(projectId string, patchName string, statuses []string, includeCommitQueue bool, page int, limit int) ([]restModel.APIPatch, *int, error) {

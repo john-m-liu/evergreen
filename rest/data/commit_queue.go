@@ -377,11 +377,7 @@ func (pc *DBCommitQueueConnector) CommitQueueRemoveItem(id, issue, user string) 
 	if cq == nil {
 		return nil, errors.Errorf("no commit queue found for '%s'", id)
 	}
-	version, err := model.GetVersionForCommitQueueItem(cq, issue)
-	if err != nil {
-		return nil, errors.Wrapf(err, "error verifying if version exists for issue '%s'", issue)
-	}
-	removed, err := cq.RemoveItemAndPreventMerge(issue, version != nil, user)
+	removed, err := cq.Remove(issue)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to remove item")
 	}

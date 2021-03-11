@@ -70,6 +70,15 @@ func (c *gitPush) Execute(ctx context.Context, comm client.Communicator, logger 
 	if err != nil {
 		return errors.Wrap(err, "Failed to get patch")
 	}
+	status := evergreen.PatchFailed
+	if p.MergeStatus == evergreen.PatchSucceeded {
+		status = evergreen.PatchSucceeded
+	}
+	if status != evergreen.PatchSucceeded {
+		err := errors.New("at least 1 task failed, will not merge patch")
+		logger.Task().Error(err)
+		return err
+	}
 
 	checkoutCommand := fmt.Sprintf("git checkout %s", conf.ProjectRef.Branch)
 	logger.Execution().Debugf("git checkout command %s", checkoutCommand)

@@ -647,9 +647,11 @@ func DequeueAndRestart(t *task.Task, caller string) error {
 
 	// this must be done before dequeuing so that we know which entries to restart
 	err = RestartItemsAfterVersion(cq, t.Project, t.Version, caller)
-	if err != nil {
-		return errors.Wrap(err, "unable to restart versions")
-	}
+	grip.Error(message.WrapError(err, message.Fields{
+		"message": "error restarting later items",
+		"project": t.Project,
+		"version": t.Version,
+	}))
 
 	return tryDequeueAndAbortCommitQueueVersion(t, *cq, caller)
 }
@@ -701,9 +703,9 @@ func tryDequeueAndAbortCommitQueueVersion(t *task.Task, cq commitqueue.CommitQue
 		issue = strconv.Itoa(p.GithubPatchData.PRNumber)
 	}
 
-	removed, err := cq.RemoveItemAndPreventMerge(issue, true, caller)
+	removed, err := cq.Remove(issue)
 	if err != nil {
-		return errors.Wrapf(err, "can't remove and prevent merge for item '%s' from queue '%s'", t.Version, t.Project)
+		return errors.Wrapf(err, "can't remove item '%s' from queue '%s'", t.Version, t.Project)
 	}
 	if removed == nil {
 		return nil
@@ -739,7 +741,7 @@ func tryDequeueAndAbortCommitQueueVersion(t *task.Task, cq commitqueue.CommitQue
 	}
 
 	event.LogCommitQueueConcludeTest(p.Id.Hex(), evergreen.MergeTestFailed)
-	return errors.Wrapf(CancelPatch(p, task.AbortInfo{TaskID: t.Id, User: caller}), "Error aborting failed commit queue patch")
+	return errors.Wrapf(CancelPatch(p, task.AbortInfo{TaskID: t.Id, User: caller}, true), "Error aborting failed commit queue patch")
 }
 
 func evalStepback(t *task.Task, caller, status string, deactivatePrevious bool) error {
